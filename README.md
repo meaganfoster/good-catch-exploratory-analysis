@@ -1,7 +1,7 @@
-{{cookiecutter.project_name}}
+Good Catch Exploratory Analysis
 ==============================
 
-{{cookiecutter.description}}
+Good catch reports collected in radiation oncology are analyzed using text mining, natural language processing, and machine learning methods.
 
 Project Organization
 ------------

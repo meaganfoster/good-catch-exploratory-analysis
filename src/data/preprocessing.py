@@ -116,6 +116,12 @@ export_to_excel(imported_files_merged)
 
 
 # 2 # Pre-processing
+def dict_export_to_excel(cluster_df__to_excel, file_name):
+    writer_dict_df = pd.ExcelWriter(current_directory + "\\Output\\" + file_name + ".xlsx", engine='xlsxwriter')
+    cluster_df__to_excel.to_excel(writer_dict_df, sheet_name='main')
+    writer_dict_df.save()
+    print(file_name + ".xlsx is saved to the Output folder.")
+
 def perform_preprocessing():
     print()
     print("Begin pre-processing...")
@@ -146,12 +152,17 @@ def perform_preprocessing():
     # Convert POS results to list
     POS_tag_df2 = pd.DataFrame(POS_tag_df.tolist(), columns=["orig_word", "POS_tag"], index=POS_tag_df.index)
     # Remove duplicates and save to excel
-    POS_deduped = POS_tag_df2.drop_duplicates(subset=["orig_word", "POS_tag"], keep='first')
-    # export_to_excel(POS_deduped)
+    # pos_deduped = POS_tag_df2.drop_duplicates(subset=["orig_word", "POS_tag"], keep='first')
 
-    # To print distinct counts from POS tagger results, use:
-    # c = Counter(POS_tag_df)
-    # print(c)
+    # Get distinct counts from POS tagger results, use:
+    POS_tagger_result_list = []
+    from collections import OrderedDict
+    c = Counter(POS_tag_df)
+    sorted_dict = OrderedDict(sorted(c.items(), key=lambda kv: kv[1], reverse=True))
+    print()
+    print("Results of the POS tagger, below:")
+    for term in sorted_dict:
+        print(term, sorted_dict[term])
 
     # # Print and save final data frame
     print("Pre-processing complete. Saving data to excel.")
@@ -320,13 +331,6 @@ print(all_pmi_chisquared_results)
 
 
 # 4 # Identify clusters using semi-processed text and print unigrams, bigrams, PMI, and chi-squared results
-def cluster_export_to_excel(cluster_df__to_excel, file_name):
-    writer_cluster_df = pd.ExcelWriter(current_directory + "\\Output\\" + file_name + ".xlsx", engine='xlsxwriter')
-    cluster_df__to_excel.to_excel(writer_cluster_df, sheet_name='main')
-    writer_cluster_df.save()
-    print("Bigram frequency complete and '" + file_name + ".xlsx is saved to the Output folder.")
-
-
 print()
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -350,7 +354,7 @@ plt.savefig(current_directory + "\\Output\\" + "sum_of_squared_distance.jpg", fo
 # plt.show()
 print("Sum of squares plot complete. See 'sum_of_squared_distance.pdf'")
 
-true_k = 6 # manually set
+true_k = 3 # manually set
 model = KMeans(n_clusters=true_k, init='k-means++', max_iter=200, n_init=10)
 model.fit(X)
 labels=model.labels_
@@ -403,7 +407,7 @@ for x in range(0, true_k):
     # Export PMI and Chi-squared results as one file, print file stats
     pmi_result_df.insert(1, 'chi2_per_bigram', chi2_result_df['chi2_per_bigram'])
     pmi_chisquared_results = pmi_result_df.copy()
-    cluster_export_to_excel(pmi_chisquared_results, file_suffix + "_pmi_chi_squared_results")
+    dict_export_to_excel(pmi_chisquared_results, file_suffix + "_pmi_chi_squared_results")
     print()
     print("See PMI and chi squared result for " + file_suffix + "cluster bigrams, below:")
     print(pmi_chisquared_results.describe())

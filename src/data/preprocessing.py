@@ -6,6 +6,7 @@ from nltk import word_tokenize, pos_tag, pos_tag_sents
 from collections import Counter
 from math import *
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+import matplotlib.pyplot as plt
 import glob
 import os
 import pandas as pd
@@ -181,6 +182,25 @@ def perform_preprocessing():
 preprocessed_desc_df = perform_preprocessing()
 
 
+# # Print word cloud
+text = " ".join(review for review in df["Description_stemmer"])
+print("There are {} words in the post-covid data set.".format(len(text)))
+
+stopwords = set(STOPWORDS)
+stopwords.update(["patient", "pt", "patients"])
+
+# Generate a word cloud image
+wordcloud = WordCloud(stopwords=stopwords, max_font_size=50, max_words=100, background_color="white").generate(text)
+# print('Cluster: {}'.format(k))
+# print('Titles')
+# titles = report_clusters['title']
+# print(titles.to_string(index=False))
+plt.figure()
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.savefig(current_directory + "\\Output\\" + "all_terms" + "_word_cloud.jpg", format="jpg")
+#  plt.show()
+
 
 # 3 # Analyze words
 def process_text_into_word_list(text):
@@ -334,12 +354,13 @@ print(all_pmi_chisquared_results)
 print()
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 vectorizer = TfidfVectorizer()
 X = vectorizer.fit_transform(df['Description_stemmer'])
 print("Vectorizer applied.")
 
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
+
 Sum_of_squared_distances = []
 K = range(2, 10)
 for k in K:
@@ -354,7 +375,7 @@ plt.savefig(current_directory + "\\Output\\" + "sum_of_squared_distance.jpg", fo
 # plt.show()
 print("Sum of squares plot complete. See 'sum_of_squared_distance.pdf'")
 
-true_k = 3 # manually set
+true_k = 6 # manually set
 model = KMeans(n_clusters=true_k, init='k-means++', max_iter=200, n_init=10)
 model.fit(X)
 labels=model.labels_
@@ -384,11 +405,11 @@ for x in range(0, true_k):
 
     cluster_desc_df = cluster_df["Description_stemmer"]
     # # Get unigram freq and save to excel
-    cluster_unigram_freq = get_itemset_frequency(cluster_df, process_text_into_word_list)
+    cluster_unigram_freq = get_itemset_frequency(cluster_desc_df, process_text_into_word_list)
     unigram_to_excel(cluster_unigram_freq, file_suffix)
 
     # # Get bigram freq and export to excel
-    cluster_bigram_freq = get_itemset_frequency(cluster_df, process_text_into_bigram_list)
+    cluster_bigram_freq = get_itemset_frequency(cluster_desc_df, process_text_into_bigram_list)
     bigram_to_excel(cluster_bigram_freq, file_suffix)
 
     # To print unigram or bigram, use 'print(d[file_suffix + "_bigram_freq"])' or:
@@ -562,7 +583,7 @@ print(postcovid_pmi_chisquared_results)
 
 print("Post-covid text analysis complete.")
 
-# # Print word clouds for each cluster
+# # Print word cloud
 text = " ".join(review for review in post_covid_df["Description_stemmer"])
 print("There are {} words in the post-covid data set.".format(len(text)))
 
